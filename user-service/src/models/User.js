@@ -136,11 +136,65 @@ class User {
         filteredUsers = filteredUsers.filter(user => user.rating >= filters.min_rating);
       }
       
+      if (filters.offset) {
+        filteredUsers = filteredUsers.slice(parseInt(filters.offset));
+      }
+      
       if (filters.limit) {
         filteredUsers = filteredUsers.slice(0, parseInt(filters.limit));
       }
       
       return filteredUsers;
+    }
+  }
+
+  // Get total count of users with optional filtering
+  static async count(filters = {}) {
+    try {
+      let sql = 'SELECT COUNT(*) as total FROM users WHERE 1=1';
+      const params = [];
+
+      if (filters.role) {
+        sql += ' AND role = ?';
+        params.push(filters.role);
+      }
+
+      if (filters.location) {
+        sql += ' AND location LIKE ?';
+        params.push(`%${filters.location}%`);
+      }
+
+      if (filters.is_active !== undefined) {
+        sql += ' AND is_active = ?';
+        params.push(filters.is_active);
+      }
+
+      if (filters.min_rating) {
+        sql += ' AND rating >= ?';
+        params.push(filters.min_rating);
+      }
+
+      const results = await executeQuery(sql, params);
+      return results[0]?.total || 0;
+    } catch (error) {
+      console.log('📝 Using mock data for count');
+      let filteredUsers = [...mockUsers];
+      
+      if (filters.role) {
+        filteredUsers = filteredUsers.filter(user => user.role === filters.role);
+      }
+      
+      if (filters.location) {
+        filteredUsers = filteredUsers.filter(user => 
+          user.location.toLowerCase().includes(filters.location.toLowerCase())
+        );
+      }
+      
+      if (filters.min_rating) {
+        filteredUsers = filteredUsers.filter(user => user.rating >= filters.min_rating);
+      }
+      
+      return filteredUsers.length;
     }
   }
 

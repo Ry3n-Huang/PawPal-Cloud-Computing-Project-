@@ -4,6 +4,7 @@ A microservice for managing users and dogs in the PawPal dog-walking coordinatio
 
 ## 🚀 Features
 
+### Core Features
 - **User Management**: CRUD operations for both dog owners and walkers
 - **Dog Management**: CRUD operations for dog profiles linked to owners
 - **Advanced Search**: Search users and dogs with various filters
@@ -13,6 +14,15 @@ A microservice for managing users and dogs in the PawPal dog-walking coordinatio
 - **Error Handling**: Structured error responses with proper HTTP status codes
 - **Rate Limiting**: Built-in rate limiting for API protection
 - **Health Checks**: Health monitoring endpoints
+
+### Sprint 2 Features (REST API Best Practices)
+- **ETag Support**: Conditional requests with ETag headers for caching and optimistic concurrency
+- **Query Parameters**: Full query parameter support for all collection resources
+- **Pagination**: Complete pagination with page, limit, total count, and navigation links
+- **HATEOAS Links**: Hypermedia links in responses for resource navigation
+- **201 Created**: Proper POST responses with Location header
+- **202 Accepted**: Asynchronous operations with task status polling
+- **Relative Paths**: All links use relative paths for portability
 
 ## 📋 Prerequisites
 
@@ -83,19 +93,22 @@ Once the service is running, visit:
 
 ### Users
 
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| `GET` | `/api/users` | Get all users |
-| `POST` | `/api/users` | Create new user |
-| `GET` | `/api/users/:id` | Get user by ID |
-| `PUT` | `/api/users/:id` | Update user |
-| `DELETE` | `/api/users/:id` | Delete user (soft delete) |
-| `GET` | `/api/users/search` | Search users |
-| `GET` | `/api/users/walkers` | Get all walkers |
-| `GET` | `/api/users/owners` | Get all owners |
-| `GET` | `/api/users/top-walkers` | Get top-rated walkers |
-| `GET` | `/api/users/:id/dogs` | Get user's dogs |
-| `GET` | `/api/users/:id/stats` | Get user statistics |
+| Method | Endpoint | Description | Features |
+|--------|----------|-------------|----------|
+| `GET` | `/api/users` | Get all users | Pagination, Query params, ETag, Links |
+| `POST` | `/api/users` | Create new user | 201 Created, Location header |
+| `GET` | `/api/users/:id` | Get user by ID | ETag, Links |
+| `PUT` | `/api/users/:id` | Update user | ETag conditional update |
+| `DELETE` | `/api/users/:id` | Delete user (soft delete) | - |
+| `GET` | `/api/users/search` | Search users | Pagination, Links |
+| `GET` | `/api/users/walkers` | Get all walkers | Pagination, Query params, Links |
+| `GET` | `/api/users/owners` | Get all owners | Pagination, Query params, Links |
+| `GET` | `/api/users/top-walkers` | Get top-rated walkers | Pagination, Links |
+| `GET` | `/api/users/:id/dogs` | Get user's dogs | Links |
+| `GET` | `/api/users/:id/stats` | Get user statistics | Links |
+| `POST` | `/api/users/bulk-import` | Bulk import users | 202 Accepted, Async task |
+| `GET` | `/api/users/tasks/:taskId` | Get async task status | Polling endpoint |
+| `GET` | `/api/users/tasks/:taskId/result` | Get async task result | Result retrieval |
 
 ### Dogs
 
@@ -166,8 +179,15 @@ Once the service is running, visit:
 - `location`: Filter by location (partial match)
 - `min_rating`: Minimum rating filter
 - `is_active`: Filter by active status
-- `limit`: Number of results (1-100)
-- `offset`: Number of results to skip
+- `page`: Page number (default: 1) - used with `limit` for pagination
+- `limit`: Number of results per page (1-100, default: 10)
+- `offset`: Number of results to skip (alternative to `page`)
+
+### Pagination
+All collection endpoints support pagination:
+- Use `page` and `limit` for page-based pagination
+- Response includes: `total`, `page`, `limit`, `totalPages`, and navigation `links`
+- Links include: `first`, `prev`, `next`, `last`, `self`, `collection`
 
 ### Dog Filters
 - `owner_id`: Filter by owner ID
@@ -213,11 +233,32 @@ npm run dev
 npm start
 ```
 
-### Cloud Deployment
-1. Set up a MySQL database on your cloud provider
-2. Update environment variables for production
-3. Deploy the service to your cloud platform
-4. Configure load balancer and SSL certificates
+### Cloud Compute (VM) Deployment
+This service is designed to be deployed on Google Cloud Compute Engine (VM).
+
+**Quick Start:**
+```bash
+# Run deployment script
+./deploy.sh
+
+# Or follow detailed instructions
+# See DEPLOYMENT.md for complete guide
+```
+
+**Detailed Deployment Guide:**
+See [DEPLOYMENT.md](./DEPLOYMENT.md) for step-by-step instructions on:
+- Creating and configuring VM instance
+- Installing dependencies
+- Setting up MySQL database
+- Configuring systemd service
+- Setting up Nginx reverse proxy
+- Monitoring and maintenance
+
+**Key Requirements:**
+- Node.js 16+ installed on VM
+- MySQL database (can be on same VM or separate)
+- Environment variables configured in `.env` file
+- Firewall rules configured for HTTP/HTTPS access
 
 ## 📝 Scripts
 
@@ -237,6 +278,68 @@ npm start
 - **CORS Configuration**: Configurable allowed origins
 - **Helmet**: Security headers
 - **Error Handling**: No sensitive data exposure in production
+- **ETag Validation**: Conditional updates prevent race conditions
+
+## 📡 REST API Best Practices (Sprint 2)
+
+### ETag Support
+- **GET requests**: Include `If-None-Match` header to get 304 Not Modified if resource unchanged
+- **PUT requests**: Include `If-Match` header for optimistic concurrency control
+- Example:
+  ```bash
+  # Get resource with ETag
+  curl -H "If-None-Match: \"abc123\"" http://localhost:3001/api/users/1
+  
+  # Update with ETag check
+  curl -X PUT -H "If-Match: \"abc123\"" -H "Content-Type: application/json" \
+    -d '{"name":"Updated Name"}' http://localhost:3001/api/users/1
+  ```
+
+### Pagination
+- All collection endpoints support pagination with `page` and `limit` parameters
+- Response includes navigation links and metadata
+- Example:
+  ```bash
+  curl "http://localhost:3001/api/users?page=1&limit=10"
+  ```
+
+### HATEOAS Links
+- All responses include `links` object with resource navigation
+- Links use relative paths for portability
+- Example response:
+  ```json
+  {
+    "success": true,
+    "data": {...},
+    "links": {
+      "self": {"href": "/api/users/1"},
+      "collection": {"href": "/api/users"}
+    }
+  }
+  ```
+
+### 201 Created
+- POST requests return 201 status code
+- `Location` header points to created resource
+- Response body includes created resource with links
+
+### 202 Accepted (Async Operations)
+- Bulk operations return 202 Accepted with task ID
+- Poll task status: `GET /api/users/tasks/:taskId`
+- Get result when complete: `GET /api/users/tasks/:taskId/result`
+- Example:
+  ```bash
+  # Start bulk import
+  curl -X POST -H "Content-Type: application/json" \
+    -d '{"users":[...]}' http://localhost:3001/api/users/bulk-import
+  # Returns: {"task": {"id": "task_123", "status": "pending", ...}}
+  
+  # Poll status
+  curl http://localhost:3001/api/users/tasks/task_123
+  
+  # Get result when completed
+  curl http://localhost:3001/api/users/tasks/task_123/result
+  ```
 
 ## 📈 Monitoring
 

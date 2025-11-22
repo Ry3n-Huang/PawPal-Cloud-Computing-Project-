@@ -168,12 +168,167 @@ const swaggerDefinition = {
           }
         }
       }
+    },
+    schemas: {
+      Links: {
+        type: 'object',
+        properties: {
+          self: {
+            type: 'object',
+            properties: {
+              href: {
+                type: 'string',
+                format: 'uri',
+                example: '/api/users/1'
+              }
+            }
+          },
+          collection: {
+            type: 'object',
+            properties: {
+              href: {
+                type: 'string',
+                format: 'uri',
+                example: '/api/users'
+              }
+            }
+          }
+        }
+      },
+      PaginationLinks: {
+        type: 'object',
+        properties: {
+          self: {
+            type: 'object',
+            properties: {
+              href: {
+                type: 'string',
+                format: 'uri',
+                example: '/api/users?page=1&limit=10'
+              }
+            }
+          },
+          first: {
+            type: 'object',
+            properties: {
+              href: {
+                type: 'string',
+                format: 'uri',
+                example: '/api/users?page=1&limit=10'
+              }
+            }
+          },
+          prev: {
+            type: 'object',
+            properties: {
+              href: {
+                type: 'string',
+                format: 'uri',
+                example: '/api/users?page=1&limit=10'
+              }
+            }
+          },
+          next: {
+            type: 'object',
+            properties: {
+              href: {
+                type: 'string',
+                format: 'uri',
+                example: '/api/users?page=2&limit=10'
+              }
+            }
+          },
+          last: {
+            type: 'object',
+            properties: {
+              href: {
+                type: 'string',
+                format: 'uri',
+                example: '/api/users?page=5&limit=10'
+              }
+            }
+          }
+        }
+      },
+      AsyncTask: {
+        type: 'object',
+        properties: {
+          id: {
+            type: 'string',
+            example: 'task_1234567890_abc'
+          },
+          status: {
+            type: 'string',
+            enum: ['pending', 'processing', 'completed', 'failed'],
+            example: 'pending'
+          },
+          type: {
+            type: 'string',
+            example: 'bulk_import_users'
+          },
+          createdAt: {
+            type: 'string',
+            format: 'date-time'
+          },
+          updatedAt: {
+            type: 'string',
+            format: 'date-time'
+          },
+          links: {
+            $ref: '#/components/schemas/Links'
+          }
+        }
+      },
+      UserUpdate: {
+        type: 'object',
+        properties: {
+          name: {
+            type: 'string',
+            maxLength: 100
+          },
+          email: {
+            type: 'string',
+            format: 'email',
+            maxLength: 150
+          },
+          role: {
+            type: 'string',
+            enum: ['owner', 'walker']
+          },
+          phone: {
+            type: 'string',
+            maxLength: 20
+          },
+          location: {
+            type: 'string',
+            maxLength: 200
+          },
+          profile_image_url: {
+            type: 'string',
+            format: 'uri',
+            maxLength: 500
+          },
+          bio: {
+            type: 'string',
+            maxLength: 1000
+          },
+          rating: {
+            type: 'number',
+            minimum: 0,
+            maximum: 5
+          },
+          total_reviews: {
+            type: 'integer',
+            minimum: 0
+          }
+        }
+      }
     }
   },
   tags: [
     {
       name: 'Users',
-      description: 'User management operations'
+      description: 'User management operations with Sprint 2 features: ETag support, pagination, HATEOAS links, and async operations'
     },
     {
       name: 'Dogs',
