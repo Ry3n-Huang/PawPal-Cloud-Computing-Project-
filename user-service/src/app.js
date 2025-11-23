@@ -14,6 +14,10 @@ const { connectDatabase } = require('./config/database');
 const app = express();
 const PORT = process.env.PORT || 3001;
 
+// Trust proxy to correctly detect protocol (important for Swagger UI)
+// Only trust first proxy (the load balancer/reverse proxy)
+app.set('trust proxy', 1);
+
 // Security middleware
 // Configure helmet to allow Swagger UI resources
 app.use(helmet({

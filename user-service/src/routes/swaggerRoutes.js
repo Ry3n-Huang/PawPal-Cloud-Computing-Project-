@@ -411,7 +411,9 @@ router.get('/swagger.json', (req, res) => {
 // Use a function to dynamically generate the setup with correct base URL
 router.use('/', swaggerUi.serve);
 router.get('/', (req, res, next) => {
-  const protocol = req.protocol || 'http';
+  // Force HTTP protocol to avoid SSL errors
+  // Since we're running on HTTP (port 3001), always use HTTP
+  const protocol = 'http';  // Force HTTP to avoid HTTPS SSL errors
   const host = req.get('host');
   const baseUrl = `${protocol}://${host}`;
   
@@ -431,7 +433,7 @@ router.get('/', (req, res, next) => {
     ...swaggerUiOptions,
     swaggerOptions: {
       ...swaggerUiOptions.swaggerOptions,
-      url: `${baseUrl}/api-docs/swagger.json`  // Use full URL for swagger.json
+      url: `${baseUrl}/api-docs/swagger.json`  // Use full HTTP URL for swagger.json
     }
   });
   
