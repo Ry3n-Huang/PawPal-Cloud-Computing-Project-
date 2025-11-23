@@ -429,10 +429,10 @@ router.get('/top-walkers', validatePagination, UserController.getTopWalkers);
  *                   example: false
  *                 message:
  *                   type: string
- *                   example: Precondition Failed: Resource has been modified
+ *                   example: "Precondition Failed: Resource has been modified"
  *                 error:
  *                   type: string
- *                   example: ETag mismatch
+ *                   example: "ETag mismatch"
  *   delete:
  *     summary: Delete user (soft delete)
  *     description: Soft delete a user by setting is_active to false

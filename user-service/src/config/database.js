@@ -10,7 +10,10 @@ const dbConfig = {
   waitForConnections: true,
   connectionLimit: process.env.DB_POOL_MAX || 10,
   queueLimit: 0,
-  charset: 'utf8mb4'
+  charset: 'utf8mb4',
+  // Force IPv4 to avoid IPv6 connection issues
+  // If host is 'localhost', use 127.0.0.1 instead
+  ...(process.env.DB_HOST === 'localhost' || !process.env.DB_HOST ? { host: '127.0.0.1' } : {})
 };
 
 // Create connection pool
