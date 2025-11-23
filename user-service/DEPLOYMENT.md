@@ -35,9 +35,7 @@ gcloud compute firewall-rules create allow-user-service \
 
 ## Step 2: SSH into VM
 
-```bash
-gcloud compute ssh user-service-vm --zone=us-central1-a
-```
+
 
 ## Step 3: Install Dependencies on VM
 
@@ -109,12 +107,30 @@ If MySQL is on the same VM:
 # Install MySQL Server
 sudo apt-get install -y mysql-server
 
-# Secure MySQL installation
-sudo mysql_secure_installation
+# Start MySQL service and enable it to start on boot
+sudo systemctl enable mysql
+sudo systemctl start mysql
 
-# Create database and user
+# Verify MySQL is running
+sudo systemctl status mysql
+
+# Secure MySQL installation (optional but recommended)
+sudo mysql_secure_installation
+# Follow the prompts to:
+# - Set root password
+# - Remove anonymous users
+# - Disallow root login remotely (optional, since we're on same VM)
+# - Remove test database
+# - Reload privilege tables
+
+# Create database and tables
 mysql -u root -p < ../database/schema.sql
+
+# Load sample data (optional)
 mysql -u root -p pawpal_db < ../database/sample_data.sql
+
+# Verify database was created
+mysql -u root -p pawpal_db -e "SHOW TABLES;"
 ```
 
 If MySQL is on a separate VM, ensure:
