@@ -16,17 +16,9 @@ const PORT = process.env.PORT || 3001;
 
 // Security middleware
 // Configure helmet to allow Swagger UI resources
+// Temporarily disable CSP for Swagger UI to troubleshoot blank page issue
 app.use(helmet({
-  contentSecurityPolicy: {
-    directives: {
-      defaultSrc: ["'self'"],
-      styleSrc: ["'self'", "'unsafe-inline'", "https://unpkg.com", "https://cdn.jsdelivr.net"],
-      scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'", "https://unpkg.com", "https://cdn.jsdelivr.net"],
-      imgSrc: ["'self'", "data:", "https:"],
-      fontSrc: ["'self'", "https://fonts.gstatic.com", "https://fonts.googleapis.com"],
-      connectSrc: ["'self'"]
-    }
-  }
+  contentSecurityPolicy: false  // Disable CSP to allow Swagger UI to load
 }));
 
 // Rate limiting

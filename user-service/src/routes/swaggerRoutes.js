@@ -349,8 +349,27 @@ const options = {
   ]
 };
 
-// Initialize swagger-jsdoc
-let swaggerSpec = swaggerJSDoc(options);
+// Initialize swagger-jsdoc with error handling
+let swaggerSpec;
+try {
+  swaggerSpec = swaggerJSDoc(options);
+  if (!swaggerSpec || !swaggerSpec.paths) {
+    console.error('⚠️  Swagger spec generation failed or incomplete');
+    swaggerSpec = { openapi: '3.0.0', info: { title: 'API Documentation', version: '1.0.0' }, paths: {} };
+  }
+} catch (error) {
+  console.error('❌ Error generating Swagger spec:', error);
+  // Fallback minimal spec
+  swaggerSpec = {
+    openapi: '3.0.0',
+    info: {
+      title: 'PawPal User Service API',
+      version: '1.0.0',
+      description: 'API documentation (spec generation error)'
+    },
+    paths: {}
+  };
+}
 
 // Swagger UI options
 const swaggerUiOptions = {
@@ -388,9 +407,15 @@ router.get('/swagger.json', (req, res) => {
   res.send(dynamicSpec);
 });
 
-// Serve swagger UI
+// Serve swagger UI with dynamic spec
 router.use('/', swaggerUi.serve);
-router.get('/', swaggerUi.setup(swaggerSpec, swaggerUiOptions));
+router.get('/', swaggerUi.setup(swaggerSpec, {
+  ...swaggerUiOptions,
+  swaggerOptions: {
+    ...swaggerUiOptions.swaggerOptions,
+    url: '/api-docs/swagger.json'  // Point to the dynamic swagger.json endpoint
+  }
+}));
 
 // Additional documentation endpoints
 router.get('/health', (req, res) => {
