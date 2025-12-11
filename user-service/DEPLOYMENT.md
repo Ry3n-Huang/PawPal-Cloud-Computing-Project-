@@ -44,7 +44,7 @@ sudo chown $USER:$USER /opt/pawpal
 cd /opt/pawpal
 
 # Clone repository (or upload files)
-git clone <your-repo-url> .
+git clone <repo-url> .
 cd user-service
 
 # Install dependencies
@@ -79,7 +79,7 @@ SKIP_DB=false
 
 ```
 
-## Step 6: Setup Database (Fully Under Your Control)
+## Step 6: Setup Database
 
 If MySQL is on the same VM, you have two options:
 
@@ -103,159 +103,42 @@ The script will automatically:
 - Generate .env file with your password configured
 
 **This gives you complete control over the MySQL setup while automating the process.**
+OR
 
-### Option B: Manual Setup
-
-If you prefer to control each step manually:
-
+manually
 ```bash
-# Install MySQL Server
-sudo apt-get install -y mysql-server
+CREATE DATABASE pawpal_user_db
+  CHARACTER SET utf8mb4
+  COLLATE utf8mb4_unicode_ci;
 
-# Start MySQL service and enable it to start on boot
-sudo systemctl enable mysql
-sudo systemctl start mysql
+CREATE USER 'user_service'@'localhost'
+  IDENTIFIED BY 'huakaifugui';
 
-# Verify MySQL is running
-sudo systemctl status mysql
+GRANT ALL PRIVILEGES ON pawpal_user_db.*
+  TO 'user_service'@'localhost';
 
-# Secure MySQL installation (optional but recommended)
-sudo mysql_secure_installation
-# Follow the prompts to:
-# - Set root password (you decide)
-# - Remove anonymous users
-# - Disallow root login remotely (optional, since we're on same VM)
-# - Remove test database
-# - Reload privilege tables
-
-# Create database user (if using custom user)
-mysql -u root -p <<EOF
-CREATE DATABASE IF NOT EXISTS pawpal_user_db;
-CREATE USER IF NOT EXISTS 'user_service'@'localhost' IDENTIFIED BY 'huakaifugui';
-GRANT ALL PRIVILEGES ON pawpal_user_db.* TO 'user_service'@'localhost';
 FLUSH PRIVILEGES;
-EOF
-
-# Create database and tables (adapting schema.sql for your database name)
-# Option 1: Use sed to replace database name in schema.sql
+```
+```bash
 sed 's/pawpal_db/pawpal_user_db/g' ../database/schema.sql | mysql -u root -p
-
-# Option 2: Or manually edit schema.sql to use pawpal_user_db, then:
-# mysql -u root -p < ../database/schema.sql
-
-# Load sample data (optional, update database name in sample_data.sql first)
-sed 's/USE pawpal_db/USE pawpal_user_db/g' ../database/sample_data.sql | mysql -u root -p
-
-# Verify database was created
-mysql -u root -p pawpal_user_db -e "SHOW TABLES;"
-mysql -u root -p pawpal_user_db -e "SELECT COUNT(*) FROM users;"
-mysql -u root -p pawpal_user_db -e "SELECT COUNT(*) FROM dogs;"
 ```
 
-**Important Notes:**
-- You have full control over the MySQL root password
-- The `schema.sql` file is provided by others, but you execute it
-- All database configuration is under your control
-- Update `.env` file with the password you set
 
-If MySQL is on a separate VM, ensure:
-- MySQL allows remote connections
-- Firewall rules allow connection from user-service VM
-- Database user has proper permissions
 
 ## Step 7: Create Systemd Service
 
 Create service file:
 
-```bash
-sudo nano /etc/systemd/system/user-service.service
-```
+cd /opt/pawpal/user-service
 
-Add the following content:
+# Start the service with PM2
 
-```ini
-[Unit]
-Description=PawPal User Service
-After=network.target mysql.service
-
-[Service]
-Type=simple
-User=your-username
-WorkingDirectory=/opt/pawpal/user-service
-Environment=NODE_ENV=production
-EnvironmentFile=/opt/pawpal/user-service/.env
-ExecStart=/usr/bin/node src/app.js
-Restart=always
-RestartSec=10
-StandardOutput=syslog
-StandardError=syslog
-SyslogIdentifier=user-service
-
-[Install]
-WantedBy=multi-user.target
-```
-
-Replace `your-username` with your actual username.
-
-## Step 8: Start Service
-
-```bash
-# Reload systemd
-sudo systemctl daemon-reload
-
-# Enable service to start on boot
-sudo systemctl enable user-service
-
-# Start service
-sudo systemctl start user-service
+pm2 start src/app.js --name user-service
 
 # Check status
-sudo systemctl status user-service
+pm2 status user-service
 
-# View logs
-sudo journalctl -u user-service -f
-```
 
-## Step 9: Setup Nginx Reverse Proxy (Optional)
-
-If you want to use port 80/443:
-
-```bash
-# Install Nginx
-sudo apt-get install -y nginx
-
-# Create Nginx configuration
-sudo nano /etc/nginx/sites-available/user-service
-```
-
-Add configuration:
-
-```nginx
-server {
-    listen 80;
-    server_name your-domain.com;
-
-    location / {
-        proxy_pass http://localhost:3001;
-        proxy_http_version 1.1;
-        proxy_set_header Upgrade $http_upgrade;
-        proxy_set_header Connection 'upgrade';
-        proxy_set_header Host $host;
-        proxy_cache_bypass $http_upgrade;
-        proxy_set_header X-Real-IP $remote_addr;
-        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto $scheme;
-    }
-}
-```
-
-Enable and start Nginx:
-
-```bash
-sudo ln -s /etc/nginx/sites-available/user-service /etc/nginx/sites-enabled/
-sudo nginx -t
-sudo systemctl restart nginx
-```
 
 ## Step 10: Verify Deployment
 
