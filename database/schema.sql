@@ -15,6 +15,7 @@ CREATE TABLE users (
     location VARCHAR(200),
     profile_image_url VARCHAR(500),
     bio TEXT,
+    google_id VARCHAR(255) UNIQUE,
     rating DECIMAL(3,2) DEFAULT 0.00,
     total_reviews INT DEFAULT 0,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -26,7 +27,8 @@ CREATE TABLE users (
     INDEX idx_role (role),
     INDEX idx_location (location),
     INDEX idx_rating (rating),
-    INDEX idx_created_at (created_at)
+    INDEX idx_created_at (created_at),
+    INDEX idx_google_id (google_id)
 );
 
 -- Dogs table: stores dog information linked to owners

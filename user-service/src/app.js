@@ -8,8 +8,10 @@ require('dotenv').config();
 const userRoutes = require('./routes/userRoutes');
 const dogRoutes = require('./routes/dogRoutes');
 const swaggerRoutes = require('./routes/swaggerRoutes');
+const authRoutes = require('./routes/authRoutes');
 const { errorHandler } = require('./middleware/errorHandler');
 const { connectDatabase } = require('./config/database');
+const passport = require('./config/passport');
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -63,6 +65,7 @@ app.get('/health', (req, res) => {
 });
 
 // API routes
+app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/dogs', dogRoutes);
 app.use('/api-docs', swaggerRoutes);

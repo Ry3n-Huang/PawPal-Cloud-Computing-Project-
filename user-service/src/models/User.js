@@ -67,6 +67,7 @@ class User {
     this.bio = data.bio;
     this.rating = data.rating;
     this.total_reviews = data.total_reviews;
+    this.google_id = data.google_id;
     this.created_at = data.created_at;
     this.updated_at = data.updated_at;
     this.is_active = data.is_active;
@@ -78,7 +79,7 @@ class User {
       let sql = `
         SELECT 
           id, name, email, role, phone, location, 
-          profile_image_url, bio, rating, total_reviews,
+          profile_image_url, bio, rating, total_reviews, google_id,
           created_at, updated_at, is_active
         FROM users 
         WHERE 1=1
@@ -203,7 +204,7 @@ class User {
     const sql = `
       SELECT 
         id, name, email, role, phone, location, 
-        profile_image_url, bio, rating, total_reviews,
+        profile_image_url, bio, rating, total_reviews, google_id,
         created_at, updated_at, is_active
       FROM users 
       WHERE id = ? AND is_active = TRUE
@@ -217,7 +218,7 @@ class User {
     const sql = `
       SELECT 
         id, name, email, role, phone, location, 
-        profile_image_url, bio, rating, total_reviews,
+        profile_image_url, bio, rating, total_reviews, google_id,
         created_at, updated_at, is_active
       FROM users 
       WHERE email = ? AND is_active = TRUE
@@ -230,19 +231,19 @@ class User {
   static async create(userData) {
     const {
       name, email, role, phone, location, 
-      profile_image_url, bio
+      profile_image_url, bio, google_id
     } = userData;
 
     const sql = `
       INSERT INTO users (
         name, email, role, phone, location, 
-        profile_image_url, bio, rating, total_reviews, is_active
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, 0.00, 0, TRUE)
+        profile_image_url, bio, google_id, rating, total_reviews, is_active
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, 0.00, 0, TRUE)
     `;
 
     const params = [
       name, email, role, phone, location, 
-      profile_image_url, bio
+      profile_image_url, bio, google_id || null
     ];
 
     const result = await executeQuery(sql, params);
@@ -293,6 +294,13 @@ class User {
   async hardDelete() {
     const sql = 'DELETE FROM users WHERE id = ?';
     await executeQuery(sql, [this.id]);
+    return true;
+  }
+
+  // Update Google ID
+  static async updateGoogleId(userId, googleId) {
+    const sql = 'UPDATE users SET google_id = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?';
+    await executeQuery(sql, [googleId, userId]);
     return true;
   }
 

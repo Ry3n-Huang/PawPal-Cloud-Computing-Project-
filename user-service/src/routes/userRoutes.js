@@ -10,10 +10,17 @@ const {
   validatePagination
 } = require('../middleware/validation');
 const { checkETag, requireETagMatch } = require('../utils/etag');
+const { authenticateToken } = require('../middleware/auth');
 
 /**
  * @swagger
  * components:
+ *   securitySchemes:
+ *     bearerAuth:
+ *       type: http
+ *       scheme: bearer
+ *       bearerFormat: JWT
+ *       description: JWT token obtained from OAuth2 login (/api/auth/google)
  *   schemas:
  *     User:
  *       type: object
@@ -368,7 +375,10 @@ router.get('/top-walkers', validatePagination, UserController.getTopWalkers);
  *         $ref: '#/components/responses/NotFoundError'
  *   put:
  *     summary: Update user (with conditional update support)
+ *     description: Requires JWT authentication. Obtain token from /api/auth/google
  *     tags: [Users]
+ *     security:
+ *       - bearerAuth: []
  *     parameters:
  *       - in: path
  *         name: id
@@ -435,8 +445,10 @@ router.get('/top-walkers', validatePagination, UserController.getTopWalkers);
  *                   example: "ETag mismatch"
  *   delete:
  *     summary: Delete user (soft delete)
- *     description: Soft delete a user by setting is_active to false
+ *     description: Soft delete a user by setting is_active to false. Requires JWT authentication.
  *     tags: [Users]
+ *     security:
+ *       - bearerAuth: []
  *     parameters:
  *       - in: path
  *         name: id
@@ -468,10 +480,11 @@ router.get('/:id', checkETag, validateId, UserController.getUserById);
 router.get('/email/:email', UserController.getUserByEmail);
 
 // PUT /api/users/:id - Update user (with ETag conditional update)
-router.put('/:id', requireETagMatch, validateId, validateUserUpdate, UserController.updateUser);
+// PUT /api/users/:id - Update user (requires JWT authentication)
+router.put('/:id', authenticateToken, requireETagMatch, validateId, validateUserUpdate, UserController.updateUser);
 
-// DELETE /api/users/:id - Delete user (soft delete)
-router.delete('/:id', validateId, UserController.deleteUser);
+// DELETE /api/users/:id - Delete user (soft delete, requires JWT authentication)
+router.delete('/:id', authenticateToken, validateId, UserController.deleteUser);
 
 /**
  * @swagger
