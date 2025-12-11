@@ -11,6 +11,7 @@ const dbConfig = {
   connectionLimit: process.env.DB_POOL_MAX || 10,
   queueLimit: 0,
   charset: 'utf8mb4',
+  connectTimeout: 10000, // 10 seconds timeout for initial connection
   // Force IPv4 to avoid IPv6 connection issues
   // If host is 'localhost', use 127.0.0.1 instead
   ...(process.env.DB_HOST === 'localhost' || !process.env.DB_HOST ? { host: '127.0.0.1' } : {})
@@ -124,6 +125,12 @@ function getMockData(sql) {
 
 async function connectDatabase() {
   try {
+    // Close existing pool if any
+    if (pool) {
+      await pool.end();
+      pool = null;
+    }
+    
     pool = mysql.createPool(dbConfig);
     
     // Test the connection
@@ -135,36 +142,39 @@ async function connectDatabase() {
     console.log('✅ Database test query successful:', rows[0]);
     
     connection.release();
+    
+    // Verify pool is set
+    if (!pool) {
+      throw new Error('Pool was not set correctly');
+    }
+    
     return pool;
   } catch (error) {
     console.error('❌ Database connection failed:', error.message);
-    console.log('⚠️  Continuing without database connection...');
-    // Don't throw error, just return null
-    return null;
+    pool = null; // Ensure pool is null on error
+    throw error; // Throw error instead of returning null
   }
 }
 
 function getPool() {
   if (!pool) {
-    console.log('⚠️  Database pool not initialized, using mock data');
+    console.error('❌ Database pool not initialized');
     return null;
   }
   return pool;
 }
 
 async function executeQuery(sql, params = []) {
+  const pool = getPool();
+  if (!pool) {
+    throw new Error('Database connection not available. Please ensure the database is connected.');
+  }
   try {
-    const pool = getPool();
-    if (!pool) {
-      // Return mock data when database is not available
-      return getMockData(sql);
-    }
     const [rows] = await pool.execute(sql, params);
     return rows;
   } catch (error) {
     console.error('Database query error:', error);
-    // Return mock data on error
-    return getMockData(sql);
+    throw error; // Re-throw error instead of using mock data
   }
 }
 

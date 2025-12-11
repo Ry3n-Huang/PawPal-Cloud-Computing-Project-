@@ -119,6 +119,7 @@ async function startServer() {
       console.log('✅ Database connected successfully');
     } else {
       console.log('⚠️  Skipping database connection (demo mode)');
+      console.log('⚠️  WARNING: Service will fail if database is required');
     }
     
     // Start the server
@@ -130,6 +131,7 @@ async function startServer() {
     });
   } catch (error) {
     console.error('❌ Failed to start server:', error);
+    console.error('❌ Database connection is required. Please check your database configuration.');
     process.exit(1);
   }
 }

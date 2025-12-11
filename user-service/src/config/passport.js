@@ -23,8 +23,11 @@ passport.use(new GoogleStrategy({
       return done(new Error('No email found in Google profile'), null);
     }
 
+    console.log('🔐 OAuth2 callback - Looking for user with email:', email);
+    
     // Check if user already exists by email
     let user = await User.findByEmail(email);
+    console.log('🔐 OAuth2 callback - User lookup result:', user ? `Found user ID ${user.id}` : 'User not found');
 
     if (user) {
       // User exists, update Google ID if not set
@@ -44,7 +47,9 @@ passport.use(new GoogleStrategy({
         profile_image_url: profileImageUrl
       };
 
+      console.log('🔐 OAuth2 callback - Creating new user with email:', email);
       const createdUser = await User.create(newUser);
+      console.log('🔐 OAuth2 callback - User created successfully, ID:', createdUser.id, 'Email:', createdUser.email, 'Google ID:', createdUser.google_id);
       return done(null, createdUser);
     }
   } catch (error) {

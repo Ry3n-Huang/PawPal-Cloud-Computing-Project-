@@ -241,9 +241,16 @@ class User {
       ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, 0.00, 0, TRUE)
     `;
 
+    // Convert undefined to null for MySQL compatibility
     const params = [
-      name, email, role, phone, location, 
-      profile_image_url, bio, google_id || null
+      name, 
+      email, 
+      role, 
+      phone ?? null, 
+      location ?? null, 
+      profile_image_url ?? null, 
+      bio ?? null, 
+      google_id ?? null
     ];
 
     const result = await executeQuery(sql, params);
