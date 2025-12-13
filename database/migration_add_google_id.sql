@@ -10,3 +10,4 @@ ADD COLUMN IF NOT EXISTS google_id VARCHAR(255) UNIQUE AFTER bio;
 -- Add index for google_id if it doesn't exist
 CREATE INDEX IF NOT EXISTS idx_google_id ON users(google_id);
 
+
