@@ -379,9 +379,12 @@ const swaggerUiOptions = {
   swaggerOptions: {
     persistAuthorization: true,
     displayRequestDuration: true,
-    filter: true,
+    filter: false,  // Disable filter to show all endpoints
     showExtensions: true,
-    showCommonExtensions: true
+    showCommonExtensions: true,
+    defaultModelsExpandDepth: 1,
+    defaultModelExpandDepth: 1,
+    docExpansion: 'list'  // Show all endpoints expanded
   }
 };
 

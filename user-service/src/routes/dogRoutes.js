@@ -224,6 +224,593 @@ const {
  *         description: Owner not found
  */
 
+/**
+ * @swagger
+ * /api/dogs/search:
+ *   get:
+ *     summary: Search dogs by various criteria
+ *     tags: [Dogs]
+ *     parameters:
+ *       - in: query
+ *         name: q
+ *         schema:
+ *           type: string
+ *         description: Search term (searches in name, breed, temperament)
+ *       - in: query
+ *         name: owner_id
+ *         schema:
+ *           type: integer
+ *         description: Filter by owner ID
+ *       - in: query
+ *         name: size
+ *         schema:
+ *           type: string
+ *           enum: [small, medium, large, extra_large]
+ *         description: Filter by dog size
+ *       - in: query
+ *         name: energy_level
+ *         schema:
+ *           type: string
+ *           enum: [low, medium, high]
+ *         description: Filter by energy level
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *           minimum: 1
+ *           maximum: 100
+ *         description: Number of results to return
+ *       - in: query
+ *         name: offset
+ *         schema:
+ *           type: integer
+ *           minimum: 0
+ *         description: Number of results to skip
+ *     responses:
+ *       200:
+ *         description: Search results
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 count:
+ *                   type: integer
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     $ref: '#/components/schemas/Dog'
+ */
+
+/**
+ * @swagger
+ * /api/dogs/friendly:
+ *   get:
+ *     summary: Get friendly dogs
+ *     description: Returns dogs that are friendly with other dogs and children
+ *     tags: [Dogs]
+ *     parameters:
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *           minimum: 1
+ *           maximum: 100
+ *         description: Number of dogs to return
+ *       - in: query
+ *         name: offset
+ *         schema:
+ *           type: integer
+ *           minimum: 0
+ *         description: Number of dogs to skip
+ *     responses:
+ *       200:
+ *         description: List of friendly dogs
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 count:
+ *                   type: integer
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     $ref: '#/components/schemas/Dog'
+ */
+
+/**
+ * @swagger
+ * /api/dogs/high-energy:
+ *   get:
+ *     summary: Get high energy dogs
+ *     description: Returns dogs with high energy level
+ *     tags: [Dogs]
+ *     parameters:
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *           minimum: 1
+ *           maximum: 100
+ *         description: Number of dogs to return
+ *       - in: query
+ *         name: offset
+ *         schema:
+ *           type: integer
+ *           minimum: 0
+ *         description: Number of dogs to skip
+ *     responses:
+ *       200:
+ *         description: List of high energy dogs
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 count:
+ *                   type: integer
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     $ref: '#/components/schemas/Dog'
+ */
+
+/**
+ * @swagger
+ * /api/dogs/senior:
+ *   get:
+ *     summary: Get senior dogs
+ *     description: Returns dogs that are 7 years or older
+ *     tags: [Dogs]
+ *     parameters:
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *           minimum: 1
+ *           maximum: 100
+ *         description: Number of dogs to return
+ *       - in: query
+ *         name: offset
+ *         schema:
+ *           type: integer
+ *           minimum: 0
+ *         description: Number of dogs to skip
+ *     responses:
+ *       200:
+ *         description: List of senior dogs
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 count:
+ *                   type: integer
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     $ref: '#/components/schemas/Dog'
+ */
+
+/**
+ * @swagger
+ * /api/dogs/stats/breeds:
+ *   get:
+ *     summary: Get breed statistics
+ *     description: Returns aggregated statistics of dogs by breed
+ *     tags: [Dogs]
+ *     responses:
+ *       200:
+ *         description: Breed statistics
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 data:
+ *                   type: object
+ *                   additionalProperties:
+ *                     type: integer
+ *                     description: Count of dogs for each breed
+ */
+
+/**
+ * @swagger
+ * /api/dogs/stats/sizes:
+ *   get:
+ *     summary: Get size statistics
+ *     description: Returns aggregated statistics of dogs by size
+ *     tags: [Dogs]
+ *     responses:
+ *       200:
+ *         description: Size statistics
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 data:
+ *                   type: object
+ *                   additionalProperties:
+ *                     type: integer
+ *                     description: Count of dogs for each size category
+ */
+
+/**
+ * @swagger
+ * /api/dogs/size/{size}:
+ *   get:
+ *     summary: Get dogs by size
+ *     tags: [Dogs]
+ *     parameters:
+ *       - in: path
+ *         name: size
+ *         required: true
+ *         schema:
+ *           type: string
+ *           enum: [small, medium, large, extra_large]
+ *         description: Dog size category
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *           minimum: 1
+ *           maximum: 100
+ *         description: Number of dogs to return
+ *       - in: query
+ *         name: offset
+ *         schema:
+ *           type: integer
+ *           minimum: 0
+ *         description: Number of dogs to skip
+ *     responses:
+ *       200:
+ *         description: List of dogs with specified size
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 count:
+ *                   type: integer
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     $ref: '#/components/schemas/Dog'
+ *       400:
+ *         description: Invalid size parameter
+ */
+
+/**
+ * @swagger
+ * /api/dogs/energy/{energyLevel}:
+ *   get:
+ *     summary: Get dogs by energy level
+ *     tags: [Dogs]
+ *     parameters:
+ *       - in: path
+ *         name: energyLevel
+ *         required: true
+ *         schema:
+ *           type: string
+ *           enum: [low, medium, high]
+ *         description: Dog energy level
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *           minimum: 1
+ *           maximum: 100
+ *         description: Number of dogs to return
+ *       - in: query
+ *         name: offset
+ *         schema:
+ *           type: integer
+ *           minimum: 0
+ *         description: Number of dogs to skip
+ *     responses:
+ *       200:
+ *         description: List of dogs with specified energy level
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 count:
+ *                   type: integer
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     $ref: '#/components/schemas/Dog'
+ *       400:
+ *         description: Invalid energy level parameter
+ */
+
+/**
+ * @swagger
+ * /api/dogs/breed/{breed}:
+ *   get:
+ *     summary: Get dogs by breed
+ *     tags: [Dogs]
+ *     parameters:
+ *       - in: path
+ *         name: breed
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Dog breed (partial match supported)
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *           minimum: 1
+ *           maximum: 100
+ *         description: Number of dogs to return
+ *       - in: query
+ *         name: offset
+ *         schema:
+ *           type: integer
+ *           minimum: 0
+ *         description: Number of dogs to skip
+ *     responses:
+ *       200:
+ *         description: List of dogs matching the breed
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 count:
+ *                   type: integer
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     $ref: '#/components/schemas/Dog'
+ */
+
+/**
+ * @swagger
+ * /api/dogs/owner/{ownerId}:
+ *   get:
+ *     summary: Get dogs by owner ID
+ *     tags: [Dogs]
+ *     parameters:
+ *       - in: path
+ *         name: ownerId
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: ID of the dog owner
+ *     responses:
+ *       200:
+ *         description: List of dogs owned by the specified owner
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 count:
+ *                   type: integer
+ *                 owner:
+ *                   type: object
+ *                   description: Owner information
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     $ref: '#/components/schemas/Dog'
+ *       404:
+ *         description: Owner not found
+ */
+
+/**
+ * @swagger
+ * /api/dogs/{id}:
+ *   get:
+ *     summary: Get dog by ID
+ *     tags: [Dogs]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: Dog ID
+ *     responses:
+ *       200:
+ *         description: Dog details
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 data:
+ *                   $ref: '#/components/schemas/Dog'
+ *       404:
+ *         description: Dog not found
+ *   put:
+ *     summary: Update dog
+ *     tags: [Dogs]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: Dog ID
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               name:
+ *                 type: string
+ *                 maxLength: 50
+ *               breed:
+ *                 type: string
+ *                 maxLength: 50
+ *               age:
+ *                 type: integer
+ *                 minimum: 0
+ *                 maximum: 30
+ *               size:
+ *                 type: string
+ *                 enum: [small, medium, large, extra_large]
+ *               temperament:
+ *                 type: string
+ *                 maxLength: 200
+ *               special_needs:
+ *                 type: string
+ *                 maxLength: 1000
+ *               medical_notes:
+ *                 type: string
+ *                 maxLength: 1000
+ *               profile_image_url:
+ *                 type: string
+ *                 format: uri
+ *                 maxLength: 500
+ *               is_friendly_with_other_dogs:
+ *                 type: boolean
+ *               is_friendly_with_children:
+ *                 type: boolean
+ *               energy_level:
+ *                 type: string
+ *                 enum: [low, medium, high]
+ *               owner_id:
+ *                 type: integer
+ *                 description: New owner ID (if changing owner)
+ *     responses:
+ *       200:
+ *         description: Dog updated successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 message:
+ *                   type: string
+ *                 data:
+ *                   $ref: '#/components/schemas/Dog'
+ *       400:
+ *         description: Validation error
+ *       404:
+ *         description: Dog not found or Owner not found (if owner_id is being updated)
+ *   delete:
+ *     summary: Delete dog (soft delete)
+ *     description: Soft deletes a dog by setting is_active to false
+ *     tags: [Dogs]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: Dog ID
+ *     responses:
+ *       200:
+ *         description: Dog deleted successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 message:
+ *                   type: string
+ *                 data:
+ *                   $ref: '#/components/schemas/Dog'
+ *       404:
+ *         description: Dog not found
+ */
+
+/**
+ * @swagger
+ * /api/dogs/{id}/hard:
+ *   delete:
+ *     summary: Hard delete dog
+ *     description: Permanently deletes a dog from the database (admin only)
+ *     tags: [Dogs]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: Dog ID
+ *     responses:
+ *       200:
+ *         description: Dog permanently deleted
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 message:
+ *                   type: string
+ *       404:
+ *         description: Dog not found
+ */
+
+/**
+ * @swagger
+ * /api/dogs/{id}/owner:
+ *   get:
+ *     summary: Get dog's owner
+ *     description: Returns the owner information for a specific dog
+ *     tags: [Dogs]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: Dog ID
+ *     responses:
+ *       200:
+ *         description: Owner information
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 data:
+ *                   type: object
+ *                   description: Owner user information
+ *       404:
+ *         description: Dog not found
+ */
+
 // GET /api/dogs - Get all dogs
 router.get('/', validateDogQuery, validatePagination, DogController.getAllDogs);
 
