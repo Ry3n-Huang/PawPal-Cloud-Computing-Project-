@@ -1,18 +1,18 @@
-# 更新云端服务 - Swagger 文档更新
+# Update Cloud Service - Swagger Documentation Update
 
-## 📋 修改的文件
+## 📋 Modified Files
 
-本次更新修改了以下文件：
-- `src/routes/dogRoutes.js` - 添加了完整的 Swagger 注释（包括 PUT、POST、DELETE）
-- `src/routes/swaggerRoutes.js` - 调整了 Swagger UI 配置（禁用过滤，展开所有端点）
+This update modified the following files:
+- `src/routes/dogRoutes.js` - Added complete Swagger annotations (including PUT, POST, DELETE)
+- `src/routes/swaggerRoutes.js` - Adjusted Swagger UI configuration (disabled filtering, expanded all endpoints)
 
-## 🚀 部署步骤
+## 🚀 Deployment Steps
 
-### 方式一：使用 Git（推荐）
+### Method 1: Using Git (Recommended)
 
-如果你在 GCP VM 上使用 Git 管理代码：
+If you're using Git to manage code on GCP VM:
 
-1. **在本地提交更改**
+1. **Commit changes locally**
    ```bash
    cd user-service
    git add src/routes/dogRoutes.js src/routes/swaggerRoutes.js
@@ -20,176 +20,175 @@
    git push
    ```
 
-2. **SSH 到 GCP VM**
+2. **SSH to GCP VM**
    ```bash
-   # 使用 gcloud
+   # Using gcloud
    gcloud compute ssh <VM_NAME> --zone=<ZONE>
    
-   # 或直接 SSH
+   # Or direct SSH
    ssh user@34.9.57.25
    ```
 
-3. **在 VM 上更新代码**
+3. **Update code on VM**
    ```bash
    cd /opt/pawpal/user-service
    git pull
    ```
 
-4. **重启服务**
+4. **Restart service**
    ```bash
-   # 如果使用 PM2
+   # If using PM2
    pm2 restart user-service
    
-   # 或如果使用 systemd
+   # Or if using systemd
    sudo systemctl restart user-service
    ```
 
-5. **验证更新**
+5. **Verify update**
    ```bash
-   # 检查服务状态
+   # Check service status
    pm2 status
-   # 或
+   # Or
    sudo systemctl status user-service
    
-   # 测试 Swagger UI
+   # Test Swagger UI
    curl http://localhost:3001/api-docs/swagger.json | grep -i "put\|post" | head -5
    ```
 
-### 方式二：直接上传文件（如果不用 Git）
+### Method 2: Direct File Upload (If not using Git)
 
-1. **在本地打包修改的文件**
+1. **Package modified files locally**
    ```bash
-   # 在项目根目录
+   # In project root directory
    cd user-service
    tar -czf swagger-update.tar.gz src/routes/dogRoutes.js src/routes/swaggerRoutes.js
    ```
 
-2. **上传到 GCP VM**
+2. **Upload to GCP VM**
    ```bash
-   # 使用 gcloud
+   # Using gcloud
    gcloud compute scp swagger-update.tar.gz <VM_NAME>:/tmp/ --zone=<ZONE>
    
-   # 或使用 SCP
+   # Or using SCP
    scp swagger-update.tar.gz user@34.9.57.25:/tmp/
    ```
 
-3. **SSH 到 VM 并更新文件**
+3. **SSH to VM and update files**
    ```bash
    ssh user@34.9.57.25
    cd /opt/pawpal/user-service
    
-   # 备份原文件（可选）
+   # Backup original files (optional)
    cp src/routes/dogRoutes.js src/routes/dogRoutes.js.backup
    cp src/routes/swaggerRoutes.js src/routes/swaggerRoutes.js.backup
    
-   # 解压并覆盖
+   # Extract and overwrite
    tar -xzf /tmp/swagger-update.tar.gz
    ```
 
-4. **重启服务**
+4. **Restart service**
    ```bash
-   # 如果使用 PM2
+   # If using PM2
    pm2 restart user-service
    
-   # 或如果使用 systemd
+   # Or if using systemd
    sudo systemctl restart user-service
    ```
 
-5. **验证更新**
+5. **Verify update**
    ```bash
-   # 检查服务日志
+   # Check service logs
    pm2 logs user-service --lines 20
-   # 或
+   # Or
    sudo journalctl -u user-service -n 20
    
-   # 测试 Swagger
+   # Test Swagger
    curl http://localhost:3001/api-docs/swagger.json | grep -i "put\|post" | head -5
    ```
 
-## ✅ 验证更新成功
+## ✅ Verify Update Success
 
-1. **访问 Swagger UI**
-   - 打开浏览器访问：`http://34.9.57.25:3001/api-docs/`
-   - 检查 "Dogs" 标签下是否能看到：
+1. **Access Swagger UI**
+   - Open browser and visit: `http://34.9.57.25:3001/api-docs/`
+   - Check if you can see under "Dogs" tag:
      - ✅ `POST /api/dogs` - Create new dog
      - ✅ `PUT /api/dogs/{id}` - Update dog
      - ✅ `DELETE /api/dogs/{id}` - Delete dog
 
-2. **检查 Swagger JSON**
+2. **Check Swagger JSON**
    ```bash
    curl http://34.9.57.25:3001/api-docs/swagger.json | jq '.paths["/api/dogs/{id}"]'
    ```
-   应该能看到 `get`, `put`, `delete` 三个方法。
+   Should see `get`, `put`, `delete` three methods.
 
-3. **测试端点**
+3. **Test endpoints**
    ```bash
-   # 测试健康检查
+   # Test health check
    curl http://34.9.57.25:3001/health
    
-   # 测试 Swagger JSON
+   # Test Swagger JSON
    curl http://34.9.57.25:3001/api-docs/swagger.json
    ```
 
-## 🔧 故障排除
+## 🔧 Troubleshooting
 
-### 服务无法启动
+### Service cannot start
 
-1. **检查日志**
+1. **Check logs**
    ```bash
    pm2 logs user-service --err
-   # 或
+   # Or
    sudo journalctl -u user-service -n 50
    ```
 
-2. **检查语法错误**
+2. **Check syntax errors**
    ```bash
    cd /opt/pawpal/user-service
    node -c src/routes/dogRoutes.js
    node -c src/routes/swaggerRoutes.js
    ```
 
-3. **检查文件权限**
+3. **Check file permissions**
    ```bash
    ls -la src/routes/
    ```
 
-### Swagger UI 没有更新
+### Swagger UI not updated
 
-1. **清除浏览器缓存**
-   - 硬刷新：`Ctrl + Shift + R` 或 `Ctrl + F5`
+1. **Clear browser cache**
+   - Hard refresh: `Ctrl + Shift + R` or `Ctrl + F5`
 
-2. **检查服务是否重启**
+2. **Check if service restarted**
    ```bash
    pm2 list
-   # 或
+   # Or
    sudo systemctl status user-service
    ```
 
-3. **检查文件是否正确更新**
+3. **Check if files are correctly updated**
    ```bash
    cd /opt/pawpal/user-service
    grep -n "filter: false" src/routes/swaggerRoutes.js
    grep -n "put:" src/routes/dogRoutes.js | head -3
    ```
 
-## 📝 注意事项
+## 📝 Notes
 
-- ⚠️ 更新前建议先备份原文件
-- ⚠️ 确保 `.env` 文件配置正确
-- ⚠️ 如果使用 PM2，确保 `pm2 save` 保存配置
-- ⚠️ 更新后等待几秒钟让服务完全启动
+- ⚠️ Recommend backing up original files before update
+- ⚠️ Ensure `.env` file is correctly configured
+- ⚠️ If using PM2, ensure `pm2 save` to save configuration
+- ⚠️ Wait a few seconds after update for service to fully start
 
-## 🎯 快速更新命令（如果使用 Git）
+## 🎯 Quick Update Commands (If using Git)
 
 ```bash
-# 在本地
+# Locally
 cd user-service
 git add src/routes/dogRoutes.js src/routes/swaggerRoutes.js
 git commit -m "Update Swagger docs"
 git push
 
-# 在 GCP VM 上（SSH 后）
+# On GCP VM (after SSH)
 cd /opt/pawpal/user-service
 git pull && pm2 restart user-service
 ```
-

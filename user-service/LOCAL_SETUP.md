@@ -1,22 +1,22 @@
-# 本地验证设置指南
+# Local Setup Guide
 
-## 前提条件
+## Prerequisites
 
-1. MySQL 已安装（通过 Homebrew）
-2. Node.js 已安装
-3. 项目代码已克隆
+1. MySQL installed (via Homebrew)
+2. Node.js installed
+3. Project code cloned
 
-## 快速设置步骤
+## Quick Setup Steps
 
-### Step 1: 启动 MySQL
+### Step 1: Start MySQL
 
 ```bash
 brew services start mysql
 ```
 
-### Step 2: 设置数据库
+### Step 2: Setup Database
 
-**如果你知道 MySQL root 密码：**
+**If you know MySQL root password:**
 
 ```bash
 cd /Users/xuanming/Project/4153_NEW_NEW
@@ -24,57 +24,57 @@ mysql -u root -p < database/schema.sql
 mysql -u root -p pawpal_db < database/sample_data.sql
 ```
 
-**如果不知道密码或想重置为空密码：**
+**If you don't know password or want to reset to empty password:**
 
 ```bash
-# 停止 MySQL
+# Stop MySQL
 brew services stop mysql
 
-# 以安全模式启动（跳过权限检查）
+# Start in safe mode (skip permission check)
 mysqld_safe --skip-grant-tables &
 
-# 连接到 MySQL（不需要密码）
+# Connect to MySQL (no password needed)
 mysql -u root
 
-# 在 MySQL 中执行：
+# In MySQL execute:
 ALTER USER 'root'@'localhost' IDENTIFIED BY '';
 FLUSH PRIVILEGES;
 EXIT;
 
-# 停止安全模式
+# Stop safe mode
 killall mysqld_safe
 killall mysqld
 
-# 正常启动 MySQL
+# Start MySQL normally
 brew services start mysql
 
-# 现在可以无密码连接了
+# Now can connect without password
 mysql -u root < database/schema.sql
 mysql -u root pawpal_db < database/sample_data.sql
 ```
 
-**或者使用交互式脚本：**
+**Or use interactive script:**
 
 ```bash
 cd /Users/xuanming/Project/4153_NEW_NEW/user-service
 ./setup-local-db.sh
-# 脚本会提示输入密码
+# Script will prompt for password
 ```
 
-### Step 3: 配置环境变量
+### Step 3: Configure Environment Variables
 
-编辑 `user-service/.env` 文件：
+Edit `user-service/.env` file:
 
 ```env
 DB_HOST=localhost
 DB_PORT=3306
 DB_USERNAME=root
-DB_PASSWORD=你的密码（如果没有密码就留空）
+DB_PASSWORD=your password (leave empty if no password)
 DB_NAME=pawpal_db
 SKIP_DB=false
 ```
 
-### Step 4: 验证数据库
+### Step 4: Verify Database
 
 ```bash
 mysql -u root -p pawpal_db -e "SHOW TABLES;"
@@ -82,7 +82,7 @@ mysql -u root -p pawpal_db -e "SELECT COUNT(*) FROM users;"
 mysql -u root -p pawpal_db -e "SELECT COUNT(*) FROM dogs;"
 ```
 
-### Step 5: 测试数据库连接
+### Step 5: Test Database Connection
 
 ```bash
 cd /Users/xuanming/Project/4153_NEW_NEW/user-service
@@ -99,14 +99,14 @@ connectDatabase().then(() => {
 "
 ```
 
-### Step 6: 启动服务
+### Step 6: Start Service
 
 ```bash
 cd /Users/xuanming/Project/4153_NEW_NEW/user-service
 npm start
 ```
 
-应该看到：
+Should see:
 ```
 📊 Database connection established
 ✅ Database test query successful: { test: 1 }
@@ -114,50 +114,49 @@ npm start
 🚀 PawPal User Service running on port 3001
 ```
 
-### Step 7: 测试 API
+### Step 7: Test API
 
 ```bash
-# 健康检查
+# Health check
 curl http://localhost:3001/health
 
-# 获取用户列表（从数据库）
+# Get user list (from database)
 curl http://localhost:3001/api/users
 
-# 创建用户（写入数据库）
+# Create user (write to database)
 curl -X POST -H "Content-Type: application/json" \
   -d '{"name":"Test User","email":"test@example.com","role":"owner"}' \
   http://localhost:3001/api/users
 
-# 验证数据在数据库中
+# Verify data in database
 mysql -u root -p pawpal_db -e "SELECT * FROM users WHERE email='test@example.com';"
 ```
 
-## 故障排除
+## Troubleshooting
 
-### MySQL 连接失败
+### MySQL Connection Failed
 
-1. 检查 MySQL 是否运行：
+1. Check if MySQL is running:
    ```bash
    brew services list | grep mysql
    ```
 
-2. 检查端口：
+2. Check port:
    ```bash
    lsof -i :3306
    ```
 
-3. 测试连接：
+3. Test connection:
    ```bash
    mysql -u root -p -e "SELECT 1;"
    ```
 
-### 数据库不存在
+### Database Does Not Exist
 
 ```bash
 mysql -u root -p < database/schema.sql
 ```
 
-### 权限问题
+### Permission Issues
 
-确保 .env 文件中的密码正确，或者重置 MySQL root 密码。
-
+Ensure password in .env file is correct, or reset MySQL root password.
